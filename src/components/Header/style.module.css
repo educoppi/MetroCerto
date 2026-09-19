@@ -1,0 +1,30 @@
+/* style.module.css */
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f6f4ef; 
+  padding: 0 60px; 
+  height: 120px; 
+  box-sizing: border-box;
+  font-family: sans-serif;
+}
+
+nav {
+  display: flex;
+  gap: 50px; 
+  align-items: center;
+}
+
+nav a {
+  text-decoration: none;
+  color: #837a71; 
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  transition: color 0.2s ease-in-out;
+}
+
+nav a:hover {
+  color: #524c46; 
+}
