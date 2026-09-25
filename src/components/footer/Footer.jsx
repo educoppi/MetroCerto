@@ -3,172 +3,203 @@ import "./Footer.css";
 
 /**
  * Footer
+ * ============================================================
+ * Rodapé flexível, pensado para manutenção fácil.
  *
- * Componente de rodapé reutilizável e seguro para projetos React.
- * Todo o conteúdo é recebido via props (com valores padrão), então
- * nenhum texto é "hardcoded" no meio da lógica — basta passar novos
- * valores para customizar sem tocar no JSX/CSS.
+ * PRINCÍPIO DO ARQUIVO:
+ * Cada seção (contato, links rápidos, redes sociais, legal) é
+ * uma LISTA (array). Isso significa que adicionar ou remover um
+ * item é só editar essa lista — você nunca precisa tocar em mais
+ * de um lugar do JSX. Não existe nenhum campo "solto" (tipo
+ * `phone`, `email`, `address` como props separadas) que precise
+ * ser removido em vários pontos diferentes do arquivo.
  *
- * Segurança:
- * - Não usa dangerouslySetInnerHTML em nenhum ponto.
- * - Links externos usam rel="noopener noreferrer" para evitar
- *   que a página aberta tenha acesso ao `window.opener`.
- * - href de telefone/e-mail são montados com encodeURIComponent
- *   para evitar quebra de string em valores inesperados.
- * - Todas as listas são validadas (Array.isArray) antes do .map,
- *   então props ausentes ou malformadas não quebram o render.
+ * COMO ADICIONAR/REMOVER COISAS:
+ *
+ * 1) Quer tirar o e-mail do rodapé?
+ *    -> Vá em `defaultContactItems` e apague o objeto do e-mail.
+ *       Não precisa mexer em mais nada.
+ *
+ * 2) Quer adicionar "WhatsApp" no contato?
+ *    -> Adicione um novo objeto em `defaultContactItems`:
+ *       { label: "WhatsApp", value: "(16) 99999-0000", href: "https://wa.me/5516999990000" }
+ *
+ * 3) Quer tirar as redes sociais inteiras?
+ *    -> Passe socialLinks={[]} ao usar o componente, ou deixe
+ *       `defaultSocialLinks` vazio. A coluna some sozinha, pois
+ *       ela só renderiza se a lista tiver algo.
+ *
+ * 4) Quer tirar a coluna de contato inteira?
+ *    -> Passe contactItems={[]}. A coluna some, sem quebrar nada,
+ *       porque a renderização checa o tamanho da lista antes.
+ *
+ * 5) Quer adicionar uma nova coluna (ex: "Formas de pagamento")?
+ *    -> Use o componente LinksColumn de novo, com outro título e
+ *       outra lista de links. Cada coluna é independente.
+ *
+ * Nenhuma dessas mudanças quebra o restante do arquivo, porque:
+ * - Toda lista é validada com Array.isArray antes de usar .map.
+ * - Toda seção só renderiza quando a lista tem itens.
+ * - Nenhuma variável é usada em um lugar e declarada em outro.
+ * ============================================================
  */
 
+// ---------- Dados padrão (edite livremente) ----------
+
 const defaultQuickLinks = [
-  { label: "Início", href: "/" },
-  { label: "Sobre nós", href: "/sobre" },
-  { label: "Serviços", href: "/servicos" },
-  { label: "Contato", href: "/contato" },
+  { label: "ESTOQUE", href: "/estoque" },
+  { label: "INFO", href: "/info" },
+  { label: "ACOMPANHAMENTO", href: "/acompanhamento" },
+  { label: "CADASTRAR", href: "/cadastrar-tecido" },
+];
+
+const defaultContactItems = [
+  // Vazio por padrão. Exemplo de como adicionar um item:
+  // { label: "Telefone", value: "(16) 0000-0000", href: "tel:+551600000000" },
+  // { label: "E-mail", value: "contato@empresa.com", href: "mailto:contato@empresa.com" },
 ];
 
 const defaultSocialLinks = [
-  { label: "Instagram", href: "https://instagram.com" },
-  { label: "LinkedIn", href: "https://linkedin.com" },
-  { label: "Facebook", href: "https://facebook.com" },
+  // Vazio por padrão. Exemplo de como adicionar um item:
+  // { label: "Instagram", href: "https://instagram.com" },
 ];
 
-function isNonEmptyString(value) {
-  return typeof value === "string" && value.trim().length > 0;
+const defaultLegalLinks = [
+  { label: "Política de Privacidade", href: "/privacidade" },
+  { label: "Termos de Uso", href: "/termos" },
+];
+
+// ---------- Helper ----------
+
+function toSafeArray(value) {
+  return Array.isArray(value) ? value : [];
 }
+
+// ---------- Subcomponentes (cada um cuida só da própria seção) ----------
+
+function BrandMark({ companyName, logoSrc }) {
+  if (logoSrc) {
+    return (
+      <img
+        src={logoSrc}
+        alt={`Logotipo de ${companyName}`}
+        className="footer__logo"
+      />
+    );
+  }
+  return <span className="footer__logo-fallback">{companyName}</span>;
+}
+
+function LinksColumn({ title, links }) {
+  const items = toSafeArray(links);
+  if (items.length === 0) return null;
+
+  return (
+    <nav className="footer__col" aria-label={title}>
+      <h3 className="footer__heading">{title}</h3>
+      <ul className="footer__list">
+        {items.map((link, idx) => (
+          <li key={link.href ?? idx}>
+            <a href={link.href}>{link.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+function ContactColumn({ title, items }) {
+  const safeItems = toSafeArray(items);
+  if (safeItems.length === 0) return null;
+
+  return (
+    <div className="footer__col">
+      <h3 className="footer__heading">{title}</h3>
+      <ul className="footer__list footer__contact">
+        {safeItems.map((item, idx) => (
+          <li key={item.label ?? idx}>
+            <span className="footer__label">{item.label}</span>
+            {item.href ? (
+              <a href={item.href}>{item.value}</a>
+            ) : (
+              <span>{item.value}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function SocialList({ links }) {
+  const items = toSafeArray(links);
+  if (items.length === 0) return null;
+
+  return (
+    <ul className="footer__social" aria-label="Redes sociais">
+      {items.map((social, idx) => (
+        <li key={social.href ?? idx}>
+          <a
+            href={social.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={social.label}
+          >
+            {social.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function LegalList({ links }) {
+  const items = toSafeArray(links);
+  if (items.length === 0) return null;
+
+  return (
+    <ul className="footer__legal">
+      {items.map((link, idx) => (
+        <li key={link.href ?? idx}>
+          <a href={link.href}>{link.label}</a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// ---------- Componente principal ----------
 
 export default function Footer({
   companyName = "Nome da Empresa",
-  description = "Uma breve descrição sobre a empresa, o que ela faz e o valor que entrega aos clientes.",
   logoSrc = null,
-  phone = "(16) 0000-0000",
-  email = "contato@empresa.com",
-  address = "Rua Exemplo, 123 - Centro, São Carlos - SP",
-  businessHours = "Seg. a Sex., 9h às 18h",
+  quickLinksTitle = "Links rápidos",
   quickLinks = defaultQuickLinks,
+  contactTitle = "Contato",
+  contactItems = defaultContactItems,
   socialLinks = defaultSocialLinks,
-  legalLinks = [
-    { label: "Política de Privacidade", href: "/privacidade" },
-    { label: "Termos de Uso", href: "/termos" },
-  ],
+  legalLinks = defaultLegalLinks,
   year = new Date().getFullYear(),
 }) {
-  const safeQuickLinks = Array.isArray(quickLinks) ? quickLinks : [];
-  const safeSocialLinks = Array.isArray(socialLinks) ? socialLinks : [];
-  const safeLegalLinks = Array.isArray(legalLinks) ? legalLinks : [];
-
-  const phoneHref = isNonEmptyString(phone)
-    ? `tel:${encodeURIComponent(phone.replace(/[^\d+]/g, ""))}`
-    : null;
-
-  const emailHref = isNonEmptyString(email)
-    ? `mailto:${encodeURIComponent(email)}`
-    : null;
-
   return (
     <footer className="footer" role="contentinfo">
       <div className="footer__inner">
         <div className="footer__grid">
-          {/* Coluna: identidade da empresa */}
           <div className="footer__col footer__col--brand">
-            <div className="footer__brand">
-              {logoSrc ? (
-                <img
-                  src={logoSrc}
-                  alt={`Logotipo de ${companyName}`}
-                  className="footer__logo"
-                />
-              ) : (
-                <span className="footer__logo-fallback">{companyName}</span>
-              )}
-            </div>
-            {isNonEmptyString(description) && (
-              <p className="footer__description">{description}</p>
-            )}
-            {safeSocialLinks.length > 0 && (
-              <ul className="footer__social" aria-label="Redes sociais">
-                {safeSocialLinks.map((social, idx) => (
-                  <li key={social.href ?? idx}>
-                    <a
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={social.label}
-                    >
-                      {social.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <BrandMark companyName={companyName} logoSrc={logoSrc} />
+            <SocialList links={socialLinks} />
           </div>
 
-          {/* Coluna: links rápidos */}
-          {safeQuickLinks.length > 0 && (
-            <nav className="footer__col" aria-label="Links rápidos">
-              <h3 className="footer__heading">Links rápidos</h3>
-              <ul className="footer__list">
-                {safeQuickLinks.map((link, idx) => (
-                  <li key={link.href ?? idx}>
-                    <a href={link.href}>{link.label}</a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          )}
+          <LinksColumn title={quickLinksTitle} links={quickLinks} />
 
-          {/* Coluna: contato */}
-          <div className="footer__col">
-            <h3 className="footer__heading">Contato</h3>
-            <ul className="footer__list footer__contact">
-              {isNonEmptyString(address) && (
-                <li>
-                  <span className="footer__label">Endereço</span>
-                  <span>{address}</span>
-                </li>
-              )}
-              {isNonEmptyString(phone) && (
-                <li>
-                  <span className="footer__label">Telefone</span>
-                  {phoneHref ? (
-                    <a href={phoneHref}>{phone}</a>
-                  ) : (
-                    <span>{phone}</span>
-                  )}
-                </li>
-              )}
-              {isNonEmptyString(email) && (
-                <li>
-                  <span className="footer__label">E-mail</span>
-                  {emailHref ? (
-                    <a href={emailHref}>{email}</a>
-                  ) : (
-                    <span>{email}</span>
-                  )}
-                </li>
-              )}
-              {isNonEmptyString(businessHours) && (
-                <li>
-                  <span className="footer__label">Horário</span>
-                  <span>{businessHours}</span>
-                </li>
-              )}
-            </ul>
-          </div>
+          <ContactColumn title={contactTitle} items={contactItems} />
         </div>
 
         <div className="footer__bottom">
           <p className="footer__copyright">
             © {year} {companyName}. Todos os direitos reservados.
           </p>
-          {safeLegalLinks.length > 0 && (
-            <ul className="footer__legal">
-              {safeLegalLinks.map((link, idx) => (
-                <li key={link.href ?? idx}>
-                  <a href={link.href}>{link.label}</a>
-                </li>
-              ))}
-            </ul>
-          )}
+          <LegalList links={legalLinks} />
         </div>
       </div>
     </footer>
