@@ -7,50 +7,61 @@
 */
 
 .footer {
-  --footer-bg: #F5F5F5;
-  --footer-fg: #7E7662;
-  --footer-fg-muted: #9aa1ae;
-  --footer-accent: #030303;
-  --footer-border: rgba(10, 10, 10, 0.08);
-  --footer-max-width: 1200px;
-  --footer-radius: 8px;
+  --footer-bg: #F5F5F5; /* mudar o tom de fundo do rodapé*/
+  --footer-fg: #7E7662;/* cor principal do texto */
+  --footer-fg-muted: #9aa1ae;/*textos secundario (menos contrate mais discreto) */
+  --footer-accent: #030303;/*cor de destaque usada no hover dos links */
+  --footer-border: rgba(10, 10, 10, 0.08); /* linha divisória sutil */
+  --footer-max-width: 1200px; /* largura máxima do conteúdo interno */
+  --footer-radius: 8px; /* raio de borda padrão (reserva p/ uso futuro) */
 
   background-color: var(--footer-bg);
   color: var(--footer-fg);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* fontes do sistema: carregam rápido, sem depender de fonte externa */
+  font-size: 0.95rem; /* levemente menor que o texto padrão */
+  line-height: 1.5; /* espaçamento entre linhas p/ melhor leitura */
 }
 
+
+/* --- Links dentro do rodapé --- */
 .footer a {
-  color: inherit;
-  text-decoration: none;
+  color: inherit;  /* herda a cor do texto ao redor, em vez do azul padrão do navegador */
+  text-decoration: none; /* remove sublinhado padrão */
 }
 
 .footer a:hover,
 .footer a:focus-visible {
-  color: var(--footer-accent);
+  color: var(--footer-accent); /* destaque visual ao passar o mouse ou focar via teclado */
   text-decoration: underline;
 }
 
 .footer a:focus-visible {
+  /* ACESSIBILIDADE: contorno visível para quem navega por teclado (Tab).
+     Só aparece no foco por teclado, não no clique do mouse. */
   outline: 2px solid var(--footer-accent);
   outline-offset: 2px;
   border-radius: 2px;
 }
 
+/* --- Container interno ---
+   Limita a largura do conteúdo e centraliza na página. */
+
 .footer__inner {
   max-width: var(--footer-max-width);
-  margin: 0 auto;
-  padding: 3rem 1.5rem 1.5rem;
+  margin: 0 auto; /* centraliza horizontalmente */
+  padding: 3rem 1.5rem 1.5rem; /* respiro interno: mais em cima, menos nas laterais/embaixo */
 }
+
+/* --- Grid principal do rodapé ---
+   3 colunas: marca (maior) | navegação (menor) | contato (média) */
 
 .footer__grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1.4fr;
-  gap: 2.5rem;
+  grid-template-columns: 2fr 1fr 1.4fr; /* proporção relativa das colunas */
+  gap: 2.5rem; /* espaço entre colunas, sem precisar de margem manual */
 }
 
+/* --- Coluna da marca (logo + descrição + redes sociais) --- */
 .footer__col--brand {
   display: flex;
   flex-direction: column;
@@ -58,11 +69,12 @@
 }
 
 .footer__logo {
-  max-height: 40px;
+  max-height: 40px; /* altura fixa: mantém consistência independente do tamanho da imagem original */
   width: auto;
 }
 
 .footer__logo-fallback {
+  /* Texto usado como "logo" quando não há imagem */
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -71,25 +83,32 @@
 
 .footer__description {
   color: var(--footer-fg-muted);
-  max-width: 40ch;
+  max-width: 40ch; /* limita a ~40 caracteres por linha: evita parágrafo largo demais */
   margin: 0;
 }
+
+/* --- Ícones de redes sociais ---
+   Transforma uma <ul> em fileira horizontal de ícones */
 
 .footer__social {
   display: flex;
   gap: 1rem;
-  list-style: none;
+  list-style: none; /* remove as bolinhas da lista */
   margin: 0.25rem 0 0;
   padding: 0;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* evita que os ícones "vazem" em telas estreitas */
 }
+
+/* --- Títulos das colunas (ex: "Empresa", "Suporte") --- */
 
 .footer__heading {
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 600;/* espaçamento uniforme entre os itens */
   color: var(--footer-fg);
   margin: 0 0 1rem;
 }
+
+/* --- Listas de links genéricas (navegação, suporte, etc.) --- */
 
 .footer__list {
   list-style: none;
@@ -97,8 +116,11 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.65rem; /* espaçamento uniforme entre os itens */
 }
+
+/* --- Coluna de contato ---
+   Cada item mostra um rótulo pequeno acima do valor (ex: "Telefone" / "(11) 1234-5678") */
 
 .footer__contact li {
   display: flex;
@@ -108,15 +130,17 @@
 }
 
 .footer__contact a {
-  color: var(--footer-fg);
+  color: var(--footer-fg); /* valor do contato com mais destaque que o rótulo */
 }
 
 .footer__label {
   font-size: 0.75rem;
   text-transform: none;
-  color: var(--footer-fg-muted);
+  color: var(--footer-fg-muted); /* rótulo discreto acima do valor */
 }
 
+/* --- Faixa inferior: copyright + links legais ---
+   Separada do resto por uma linha sutil (border-top) */
 .footer__bottom {
   margin-top: 2.5rem;
   padding-top: 1.5rem;
@@ -124,7 +148,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between; /* copyright à esquerda, links legais à direita */
   gap: 1rem;
 }
 
@@ -142,25 +166,34 @@
   padding: 0;
   font-size: 0.85rem;
 }
-
+/* 
+   ACESSIBILIDADE: menos movimento
+   Desativa transições para quem configurou o sistema para
+   reduzir animações (enjoo, epilepsia fotossensível, etc.)
+   ============================================================ */
 /* Respeita usuários que preferem menos movimento */
+
 @media (prefers-reduced-motion: reduce) {
   .footer * {
     transition: none !important;
   }
 }
-
-/* Tablet */
+/* 
+   RESPONSIVIDADE
+   */
+/* Tablet (até 860px): grid vira 2 colunas,
+   e a coluna da marca ocupa a largura toda, ficando em cima */
 @media (max-width: 860px) {
   .footer__grid {
     grid-template-columns: 1fr 1fr;
   }
   .footer__col--brand {
-    grid-column: 1 / -1;
+    grid-column: 1 / -1; /* ocupa todas as colunas disponíveis */
   }
 }
 
-/* Mobile */
+/* Mobile (até 520px): tudo empilhado em 1 coluna só,
+   e o rodapé inferior também empilha (copyright em cima, legal embaixo) */
 @media (max-width: 520px) {
   .footer__grid {
     grid-template-columns: 1fr;
