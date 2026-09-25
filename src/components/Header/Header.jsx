@@ -1,11 +1,12 @@
+import Icon from '../Icon';
+import style from './style.module.css';
+
 export default function Header() {
 
     return (
         <>
             <header>
-                <div>
-
-                </div>
+                <Icon />
                 <nav>
                     <a href="">ESTOQUE</a>
                     <a href="">INFO</a>
