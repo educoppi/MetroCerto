@@ -1,12 +1,18 @@
 import "./Estoque.css";
+import marrom from '../assets/Images/marrom.png';
+import cinza from '../assets/Images/cinza.png';
+import morangos from '../assets/Images/morangos.png';
+import amarelo from '../assets/Images/amarelo.png';
+import floral from '../assets/Images/floral.png';
+import sakura from '../assets/Images/sakura.png';
 
 const tecidos = [
-    { nome: "Marrom", imagem: "/images/tecidos/marrom.png" },
-    { nome: "Cinza", imagem: "/images/tecidos/cinza.png" },
-    { nome: "Morangos", imagem: "/images/tecidos/morangos.png" },
-    { nome: "Amarelo", imagem: "/images/tecidos/amarelo.png" },
-    { nome: "Floral", imagem: "/images/tecidos/floral.png" },
-    { nome: "Sakura", imagem: "/images/tecidos/sakura.png" },
+  { nome: "Marrom", imagem: marrom },
+  { nome: "Cinza", imagem: cinza },
+  { nome: "Morangos", imagem: morangos },
+  { nome: "Amarelo", imagem: amarelo },
+  { nome: "Floral", imagem: floral },
+  { nome: "Sakura", imagem: sakura },
 ];
 
 export default function Estoque() {
