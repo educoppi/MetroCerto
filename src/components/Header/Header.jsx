@@ -1,5 +1,5 @@
-import Icon from '../Icon';
-import style from './style.module.css';
+import Icon from '../Icon/Icon';
+import style from './Header.module.css';
 
 export default function Header() {
 
@@ -8,7 +8,7 @@ export default function Header() {
             <header>
                 <Icon />
                 <nav>
-                    <a href="">ESTOQUE</a>
+                    <a href="../">ESTOQUE</a>
                     <a href="">INFO</a>
                     <a href="">ACOMPANHAMENTO</a>
                     <a href="">CADASTRAR TECIDO</a>

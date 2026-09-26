@@ -1,5 +1,5 @@
 import Logo from '../../assets/logo.png';
-import style from './style.module.css';
+import style from './Icon.module.css';
 
 export default function Icon() {
     return (
