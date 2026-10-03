@@ -1,5 +1,5 @@
 import Header from "../components/Header/Header";
-import Footer from "../components/footer/Footer";
+import Footer from "../components/Footer/Footer.jsx";
 import "./Acompanhamento.css";
 
 // Dados de exemplo: depois vêm do estado, de uma API ou do Estoque
