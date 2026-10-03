@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Adamina&family=Alike&display=swap');
 .home {
   min-height: 100vh;
   background-color: #f8f4ef;
@@ -13,12 +14,13 @@
   box-sizing: border-box;
 }
 
-.home-titulo {
+.home-titulo, .home-subtitulo {
   margin: 0;
   font-size: 7rem;
   font-weight: 400;
   letter-spacing: 2px;
   line-height: 1;
+    font-family: 'Alike', Georgia, serif;
 }
 
 .home-linha {
@@ -41,4 +43,5 @@
   font-size: 1rem;
   line-height: 1.6;
   color: #6b6350;
+  font-family: 'Adamina', Georgia, serif;
 }
