@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Adamina&family=Alike&display=swap');
+
 
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
