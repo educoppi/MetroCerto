@@ -1,20 +1,17 @@
 import Icon from '../Icon/Icon';
 import style from './Header.module.css';
 
-export default function Header() {
-
+// Receba setTela como desestruturação nas props
+export default function Header({ setTela }) {
     return (
-        <>
-            <header>
-                <Icon />
-                <nav>
-                    <a href="../">ESTOQUE</a>
-                    <a href="">INFO</a>
-                    <a href="">ACOMPANHAMENTO</a>
-                    <a href="">CADASTRAR TECIDO</a>
-                </nav>
-            </header>
-        </>
+        <header>
+            <Icon onClick={() => setTela('home')} />
+            <nav>
+                <a onClick={() => setTela('estoque')}>ESTOQUE</a>
+                <a onClick={() => setTela('info')}>INFO</a>
+                <a onClick={() => setTela('acompanhamento')}>ACOMPANHAMENTO</a>
+                <a onClick={() => setTela('cadastro')}>CADASTRAR TECIDO</a>
+            </nav>
+        </header>
     )
 }
-

@@ -53,10 +53,11 @@
 body {
   margin: 0;
   background-color: #f6f4ef;
+  Overflow-y: hidden;
 }
 
 #root {
-  width: 1126px;
+  width: 100%;
   max-width: 100%;
   margin: 0 auto;
   text-align: center;

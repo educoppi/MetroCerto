@@ -12,7 +12,6 @@ const itens = [
 export default function Acompanhamento() {
   return (
     <div className="pagina">
-      <Header />
 
       <main className="acompanhamento">
         <h1 className="acompanhamento__titulo">ACOMPANHAMENTO</h1>
