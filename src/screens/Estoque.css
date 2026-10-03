@@ -1,0 +1,181 @@
+.estoque-page {
+    min-height: 100vh;
+    background: #f6f1e6;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: #2a2620;
+}
+
+.estoque-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 48px;
+}
+
+.estoque-logo h1 {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+}
+
+.estoque-logo span {
+    display: block;
+    font-size: 11px;
+    color: #766f61;
+    border-top: 1px solid #766f61;
+    padding-top: 4px;
+    margin-top: 2px;
+}
+
+.estoque-nav {
+    display: flex;
+    gap: 36px;
+}
+
+.estoque-nav a {
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: #8a8371;
+    text-decoration: none;
+}
+
+.estoque-nav a.ativo {
+    color: #2a2620;
+}
+
+.estoque-cadastrar {
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: #8a8371;
+    text-decoration: none;
+}
+
+.estoque-main {
+    padding: 24px 64px 64px;
+}
+
+.estoque-titulo {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 40px;
+    font-weight: 400;
+    color: #4a4335;
+    margin: 24px 0 56px;
+}
+
+.estoque-conteudo {
+    display: flex;
+    align-items: center;
+    gap: 72px;
+}
+
+.rolos-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 48px;
+    column-gap: 40px;
+}
+
+.rolo-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.rolo-icone {
+    position: relative;
+    width: 100px;
+    height: 88px;
+    margin-bottom: 14px;
+}
+
+.rolo-topo {
+    position: absolute;
+    top: 0;
+    left: 6px;
+    width: 88px;
+    height: 26px;
+    background: #f6f1e6;
+    border: 3px solid #211d17;
+    border-radius: 50%;
+}
+
+.rolo-furo {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 7px;
+    height: 7px;
+    background: #211d17;
+    border-radius: 50%;
+}
+
+.rolo-corpo {
+    position: absolute;
+    top: 18px;
+    left: 0;
+    width: 100px;
+    height: 66px;
+    background: #f6f1e6;
+    border: 3px solid #211d17;
+    border-radius: 4px 4px 12px 4px;
+}
+
+.rolo-corpo::after {
+    content: "";
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    width: 24px;
+    height: 24px;
+    background: #f6f1e6;
+    border-left: 3px solid #211d17;
+    border-top: 3px solid #211d17;
+    border-radius: 0 0 12px 0;
+}
+
+.rolo-tecido {
+    position: absolute;
+    top: 34px;
+    left: 26px;
+    width: 40px;
+    height: 34px;
+    background-color: #d8d2c2;
+    background-size: cover;
+    background-position: center;
+    border: 2px solid #211d17;
+}
+
+.rolo-nome {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 15px;
+    color: #4a4335;
+    margin: 0 0 14px;
+}
+
+.rolo-info-btn {
+    width: 110px;
+    padding: 10px 0;
+    border: none;
+    border-radius: 6px;
+    background: #b7ac93;
+    color: #f6f1e6;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.rolo-add-btn {
+    width: 96px;
+    height: 96px;
+    min-width: 96px;
+    border-radius: 50%;
+    border: none;
+    background: #b7ac93;
+    color: #f6f1e6;
+    font-size: 36px;
+    line-height: 1;
+    cursor: pointer;
+}
