@@ -1,25 +1,42 @@
 import { useState } from 'react'
 import './App.css'
-/*import Header from './components/Header/Header'*/
+import Header from './components/Header/Header'
+import Footer from './components/footer/Footer'
+import Home from './screens/Home'
 import Estoque from './screens/Estoque'
 import Acompanhamento from './screens/Acompanhamento'
-import Home from './screens/Home';
+import Info from './screens/Info'
+import Cadastro from './screens/Cadastro'
 
 function App() {
-  
   const [tela, setTela] = useState('home')
+
+  const renderizarTela = () => {
+    switch (tela) {
+      case 'home':
+        return <Home />
+      case 'estoque':
+        return <Estoque />
+      case 'info':
+        return <Info />
+      case 'acompanhamento':
+        return <Acompanhamento />
+      case 'cadastro':
+        return <Cadastro />
+      default:
+        return <Home />
+    }
+  }
 
   return (
     <>
-      <div style={{ padding: 8 }}>
-        <button onClick={() => setTela('estoque')}>Estoque</button>
-        <button onClick={() => setTela('acompanhamento')}>Acompanhamento</button>
-        <button onClick={() => setTela('home')}>Home</button>
-      </div>
+      <Header setTela={setTela} />
 
-      {tela === 'estoque' && <Estoque />}
-      {tela === 'acompanhamento' && <Acompanhamento />}
-      {tela === 'home' && <Home />}
+      <main>
+        {renderizarTela()}
+      </main>
+
+      <Footer />
     </>
   )
 }
