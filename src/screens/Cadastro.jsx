@@ -1,6 +1,7 @@
 import RollIcon from "../components/rollIcon/RollIcon";
 import TextField from "../components/textField/TextField";
 import Header from '../components/Header/Header';
+import Button from '../components/Button/Button';
 import { useId, useState } from 'react';
 
 const css = `
@@ -64,13 +65,15 @@ const css = `
 }
 `;
 
+
+
 const CAMPOS = [
     { name: 'metrosIniciais', label: 'Metros iniciais:' },
     { name: 'metrosRetirados', label: 'Metros retirados:' },
     { name: 'estoqueMinimo', label: 'Estoque Mínimo:' },
 ];
 
-export default function Cadastro({ setTela, nome = 'Marrom', cor = '#9a6545' }) {
+export default function Cadastro({ setTela, nome = 'Preto', cor = '#111111' }) {
     const [valores, setValores] = useState({
         metrosIniciais: '',
         metrosRetirados: '',
@@ -79,6 +82,21 @@ export default function Cadastro({ setTela, nome = 'Marrom', cor = '#9a6545' }) 
 
     const handleChange = ({ target }) =>
         setValores((prev) => ({ ...prev, [target.name]: target.value }));
+
+    const [salvando, setSalvando] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setSalvando(true);
+        try {
+            // TODO: salvar os dados aqui (API, localStorage etc.)
+            console.log('Salvando', valores);
+            await new Promise((r) => setTimeout(r, 800)); // simulação, remova depois
+        } finally {
+            setSalvando(false);
+        }
+    };
+
 
     return (
         <div className="rolo-page">
@@ -94,7 +112,7 @@ export default function Cadastro({ setTela, nome = 'Marrom', cor = '#9a6545' }) 
                         <RollIcon cor={cor} titulo={`Rolo de tecido ${nome}`} />
                     </div>
 
-                    <form className="rolo-form" onSubmit={(e) => e.preventDefault()}>
+                    <form className="rolo-form" onSubmit={handleSubmit}>
                         {CAMPOS.map((campo) => (
                             <TextField
                                 key={campo.name}
@@ -108,6 +126,13 @@ export default function Cadastro({ setTela, nome = 'Marrom', cor = '#9a6545' }) 
                                 onChange={handleChange}
                             />
                         ))}
+
+                        <Button type="submit" size="lg" fullWidth loading={salvando}>
+                            Salvar
+                        </Button>
+                        <Button variant="secondary" fullWidth onClick={() => setTela('estoque')}>
+                            Voltar
+                        </Button>
                     </form>
                 </section>
             </main>
