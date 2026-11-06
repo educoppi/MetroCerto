@@ -1,5 +1,5 @@
-import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer.jsx";
+import Dashboard from "../components/Dashboard/Dashboard.jsx";
 import "./Acompanhamento.css";
 
 // Dados de exemplo: depois vêm do estado, de uma API ou do Estoque
@@ -12,9 +12,10 @@ const itens = [
 export default function Acompanhamento() {
   return (
     <div className="pagina">
-
       <main className="acompanhamento">
         <h1 className="acompanhamento__titulo">ACOMPANHAMENTO</h1>
+
+        <Dashboard itens={itens} />
 
         <section className="acompanhamento__conteudo">
           {itens.map((item) => (
