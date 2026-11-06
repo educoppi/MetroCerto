@@ -1,10 +1,11 @@
-/*import Header from "../components/Header/Header";
-import Footer from "../components/footer/Footer";*/
+import Header from "../components/Header/Header";
+import Footer from "../components/footer/Footer";
 import "./Home.css";
 
 
 export default function Home() {
   return (
+    
      <div className="home-page">
      
 
@@ -22,7 +23,9 @@ export default function Home() {
         </p>
       </main>
 
-      
+      <Footer />
     </div>
+    
+    
   );
 }
