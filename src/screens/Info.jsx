@@ -64,7 +64,7 @@ export default function Info() {
         )}
       </main>
 
-      <Footer />
+      
     </div>
         
         
