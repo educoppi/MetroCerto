@@ -1,0 +1,78 @@
+@import url("https://fonts.googleapis.com/css2?family=Alike&display=swap");
+
+.info {
+  padding: 24px 64px 64px;
+  background: #f9f4ec;
+  font-family: "Alike", Georgia, serif;
+}
+
+.info__titulo {
+  font-family: "Alike", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: #8a8371;
+  margin: 0 0 48px;
+}
+
+.info__tabela-wrapper {
+  width: 100%;
+  overflow-x: auto; /* não quebra em telas pequenas */
+}
+
+.info__tabela {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.info__tabela th {
+  font-family: "Alike", Georgia, serif;
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: #2a2620;
+  text-align: left;
+  padding: 0 12px 12px;
+  border-bottom: 2px solid #b7ac93;
+}
+
+.info__tabela td {
+  font-family: "Alike", Georgia, serif;
+  font-size: 0.9rem;
+  color: #2a2620;
+  padding: 12px;
+  height: 64px;
+  border-bottom: 2px solid #b7ac93;
+}
+
+.info__mais {
+  display: block;
+  margin: -24px auto 0;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: #b7ac93;
+  cursor: pointer;
+  position: relative;
+}
+
+.info__mais svg {
+  display: block;
+  margin: auto;
+}
+
+@media (max-width: 700px) {
+  .info {
+    padding: 24px 20px 48px;
+  }
+}
+
+.info__mais:hover {
+  background: #8a8371;
+}
+
+.info__mais:focus-visible {
+  outline: 2px solid #4a4335;
+  outline-offset: 2px;
+}
