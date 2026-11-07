@@ -1,4 +1,5 @@
 import"./Info.css";
+import { useState } from "react"
 
 const colunas = [
   { chave: "data", titulo: "Data" },
@@ -16,6 +17,9 @@ const MIN_LINHAS = 4;
 
 export default function Info() {
     const linhasVazias = Math.max(MIN_LINHAS - registros.length, 0);
+    const [visiveis, setVisiveis] = useState(4);
+    const temMais = visiveis < registros.length;
+    const verMais = () => setVisiveis((v) => v + 4);
     return (
 
     <div className="pagina">
@@ -34,7 +38,7 @@ export default function Info() {
               </tr>
             </thead>
             <tbody>
-              {registros.map((item, i) => (
+              {registros.slice(0, visiveis).map((item, i) => (
                 <tr key={item.idRolo ?? i}>
                   {colunas.map((col) => (
                     <td key={col.chave}>{item[col.chave]}</td>
