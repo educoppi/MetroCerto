@@ -1,4 +1,5 @@
 import "./Estoque.css";
+import RollIcon from "../components/rollIcon/RollIcon";
 import marrom from '../assets/Images/marrom.png';
 import cinza from '../assets/Images/cinza.png';
 import morangos from '../assets/Images/morangos.png';
@@ -27,14 +28,11 @@ export default function Estoque() {
                         {tecidos.map((tecido) => (
                             <div className="rolo-card" key={tecido.nome}>
                                 <div className="rolo-icone">
-                                    <div className="rolo-topo">
-                                        <div className="rolo-furo"></div>
-                                    </div>
-                                    <div className="rolo-corpo"></div>
-                                    <div
-                                        className="rolo-tecido"
-                                        style={{ backgroundImage: `url(${tecido.imagem})` }}
-                                    ></div>
+                                    <RollIcon
+                                        imagem={tecido.imagem}
+                                        titulo={`Rolo de tecido ${tecido.nome}`}
+                                        tamanho={110}
+                                    />
                                 </div>
 
                                 <p className="rolo-nome">Rolo: {tecido.nome}</p>
