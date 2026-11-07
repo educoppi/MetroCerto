@@ -67,6 +67,7 @@ body {
   flex-direction: column;
   box-sizing: border-box;
 }
+#root > main { flex: 1; }
 
 h1,
 h2 {
