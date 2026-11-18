@@ -1,181 +1,310 @@
 .estoque-page {
-    min-height: 100vh;
-    background: #f6f1e6;
+    --estoque-bg: #f6f1e6;
+    --estoque-card: #fbf8f1;
+    --estoque-texto: #4a4335;
+    --estoque-suave: #8a8371;
+    --estoque-borda: rgba(138, 100, 36, 0.14);
+    --estoque-ouro: #b8893b;
+    --estoque-ouro-claro: #e6c77a;
+    --estoque-botao: #b7ac93;
+    --estoque-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+    background: transparent;
     font-family: "Helvetica Neue", Arial, sans-serif;
     color: #2a2620;
-}
-
-.estoque-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 24px 48px;
-}
-
-.estoque-logo h1 {
-    margin: 0;
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 22px;
-    letter-spacing: 1px;
-}
-
-.estoque-logo span {
-    display: block;
-    font-size: 11px;
-    color: #766f61;
-    border-top: 1px solid #766f61;
-    padding-top: 4px;
-    margin-top: 2px;
-}
-
-.estoque-nav {
-    display: flex;
-    gap: 36px;
-}
-
-.estoque-nav a {
-    font-size: 12px;
-    letter-spacing: 1px;
-    color: #8a8371;
-    text-decoration: none;
-}
-
-.estoque-nav a.ativo {
-    color: #2a2620;
-}
-
-.estoque-cadastrar {
-    font-size: 12px;
-    letter-spacing: 1px;
-    color: #8a8371;
-    text-decoration: none;
+    text-align: left;
 }
 
 .estoque-main {
+    max-width: 1280px;
+    margin: 0 auto;
     padding: 24px 64px 64px;
+    box-sizing: border-box;
+}
+
+.estoque-topo {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 24px 0 36px;
 }
 
 .estoque-titulo {
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 40px;
+    margin: 0;
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: clamp(36px, 4.6vw, 52px);
     font-weight: 400;
-    color: #4a4335;
-    margin: 24px 0 56px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #7e7662;
+}
+
+.estoque-contagem {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--estoque-suave);
 }
 
 .estoque-conteudo {
     display: flex;
     align-items: center;
-    gap: 72px;
+    gap: 56px;
 }
 
 .rolos-grid {
     flex: 1;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    row-gap: 48px;
-    column-gap: 40px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 28px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 .rolo-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    text-align: center;
+    gap: 22px;
+    padding: 36px 24px 22px;
+    border: 1px solid var(--estoque-borda);
+    border-radius: 18px;
+    background:
+        radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.9), transparent 70%),
+        var(--estoque-card);
+    box-shadow: 0 1px 2px rgba(42, 38, 32, 0.04);
+    overflow: hidden;
+    animation: cardEntrada 0.8s var(--estoque-ease) both;
+    animation-delay: calc(var(--i, 0) * 80ms + 100ms);
+    transition: transform 0.5s var(--estoque-ease), box-shadow 0.5s var(--estoque-ease), border-color 0.5s var(--estoque-ease);
 }
 
-.rolo-icone {
-    position: relative;
-    width: 100px;
-    height: 88px;
-    margin-bottom: 14px;
-}
-
-.rolo-topo {
-    position: absolute;
-    top: 0;
-    left: 6px;
-    width: 88px;
-    height: 26px;
-    background: #f6f1e6;
-    border: 3px solid #211d17;
-    border-radius: 50%;
-}
-
-.rolo-furo {
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 7px;
-    height: 7px;
-    background: #211d17;
-    border-radius: 50%;
-}
-
-.rolo-corpo {
-    position: absolute;
-    top: 18px;
-    left: 0;
-    width: 100px;
-    height: 66px;
-    background: #f6f1e6;
-    border: 3px solid #211d17;
-    border-radius: 4px 4px 12px 4px;
-}
-
-.rolo-corpo::after {
+.rolo-card::before {
     content: "";
     position: absolute;
-    right: -3px;
-    bottom: -3px;
-    width: 24px;
-    height: 24px;
-    background: #f6f1e6;
-    border-left: 3px solid #211d17;
-    border-top: 3px solid #211d17;
-    border-radius: 0 0 12px 0;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--estoque-ouro-claro), transparent);
+    opacity: 0;
+    transition: opacity 0.5s var(--estoque-ease);
 }
 
-.rolo-tecido {
-    position: absolute;
-    top: 34px;
-    left: 26px;
-    width: 40px;
-    height: 34px;
-    background-color: #d8d2c2;
-    background-size: cover;
-    background-position: center;
-    border: 2px solid #211d17;
+.rolo-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(184, 137, 59, 0.3);
+    box-shadow: 0 22px 40px -24px rgba(74, 67, 53, 0.45);
+}
+
+.rolo-card:hover::before {
+    opacity: 1;
+}
+
+.rolo-rodape {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding-top: 16px;
+    border-top: 1px solid var(--estoque-borda);
 }
 
 .rolo-nome {
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 15px;
-    color: #4a4335;
-    margin: 0 0 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 19px;
+    color: var(--estoque-texto);
+}
+
+.rolo-rotulo {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--estoque-suave);
 }
 
 .rolo-info-btn {
-    width: 110px;
-    padding: 10px 0;
-    border: none;
-    border-radius: 6px;
-    background: #b7ac93;
-    color: #f6f1e6;
-    font-size: 14px;
+    position: relative;
+    padding: 10px 22px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: var(--estoque-botao);
+    color: #fbf8f1;
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
     cursor: pointer;
+    overflow: hidden;
+    transition: background-color 0.35s var(--estoque-ease), box-shadow 0.35s var(--estoque-ease), transform 0.35s var(--estoque-ease);
+}
+
+.rolo-info-btn:hover,
+.rolo-info-btn:focus-visible {
+    outline: none;
+    background: #9d9178;
+    box-shadow: 0 0 0 3px rgba(230, 199, 122, 0.35);
+}
+
+.rolo-info-btn:active {
+    transform: translateY(1px);
 }
 
 .rolo-add-btn {
+    position: relative;
+    display: grid;
+    place-items: center;
     width: 96px;
     height: 96px;
     min-width: 96px;
+    border: 0;
     border-radius: 50%;
-    border: none;
-    background: #b7ac93;
-    color: #f6f1e6;
-    font-size: 36px;
+    background: var(--estoque-botao);
+    color: #fbf8f1;
+    font-size: 38px;
+    font-weight: 300;
     line-height: 1;
     cursor: pointer;
+    box-shadow: 0 16px 32px -18px rgba(74, 67, 53, 0.6);
+    transition: transform 0.5s var(--estoque-ease), background-color 0.35s var(--estoque-ease), box-shadow 0.35s var(--estoque-ease);
+}
+
+.rolo-add-btn::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border: 1px solid rgba(184, 137, 59, 0.45);
+    border-radius: 50%;
+    animation: anelPulso 3s ease-out infinite;
+}
+
+.rolo-add-btn span {
+    transition: transform 0.5s var(--estoque-ease);
+}
+
+.rolo-add-btn:hover,
+.rolo-add-btn:focus-visible {
+    outline: none;
+    background: #9d9178;
+    transform: translateY(-2px);
+    box-shadow: 0 20px 36px -16px rgba(74, 67, 53, 0.7), 0 0 0 4px rgba(230, 199, 122, 0.3);
+}
+
+.rolo-add-btn:hover span,
+.rolo-add-btn:focus-visible span {
+    transform: rotate(90deg);
+}
+
+@keyframes cardEntrada {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes anelPulso {
+    0% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.25);
+    }
+}
+
+@media (max-width: 900px) {
+    .estoque-main {
+        padding: 16px 24px 48px;
+    }
+
+    .estoque-titulo {
+        font-size: 32px;
+    }
+
+    .estoque-conteudo {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 32px;
+    }
+
+    .rolo-add-btn {
+        align-self: center;
+    }
+}
+
+@media (max-width: 520px) {
+    .estoque-topo {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .estoque-page *,
+    .estoque-page *::before {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+.rolo-card--novo {
+    border-color: rgba(184, 137, 59, 0.55);
+    animation:
+        cardEntrada 0.8s var(--estoque-ease) both,
+        cardNovo 2.4s ease-out 0.6s 2;
+}
+
+.rolo-card--novo::before {
+    opacity: 1;
+}
+
+.rolo-novo {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 2;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #f7e8bf, #e6c77a);
+    color: #6b4e1c;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+@keyframes cardNovo {
+    0% {
+        box-shadow: 0 0 0 0 rgba(230, 199, 122, 0.7);
+    }
+    100% {
+        box-shadow: 0 0 0 14px rgba(230, 199, 122, 0);
+    }
+}
+
+.estoque-aviso {
+    margin: -24px 0 32px;
+    padding: 12px 16px;
+    border: 1px solid rgba(176, 90, 69, 0.3);
+    border-radius: 12px;
+    background: rgba(176, 90, 69, 0.08);
+    font-size: 13px;
+    color: #8a4433;
 }
