@@ -1,10 +1,10 @@
 import Logo from '../../assets/logo.png';
 import style from './Icon.module.css';
 
-export default function Icon() {
+export default function Icon({ onClick }) {
     return (
-        <div>
-            <img src={Logo} alt="" />
-        </div>
-    )
+        <button type="button" className={style.marca} onClick={onClick} aria-label="Ir para a página inicial">
+            <img className={style.logo} src={Logo} alt="MetroCerto" />
+        </button>
+    );
 }

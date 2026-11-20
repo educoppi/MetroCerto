@@ -1,3 +1,89 @@
-img {
-    width: 130px;
+.marca {
+  position: relative;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.marca::after {
+  content: '';
+  position: absolute;
+  inset: -20% auto -20% -60%;
+  z-index: 1;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(247, 232, 191, 0.75), transparent);
+  transform: skewX(-20deg) translateX(0);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.logo {
+  display: block;
+  width: 130px;
+  height: auto;
+  transition: filter 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.marca:hover,
+.marca:focus-visible {
+  transform: translateY(-1px);
+}
+
+.marca:hover .logo,
+.marca:focus-visible .logo {
+  filter: drop-shadow(0 6px 14px rgba(184, 137, 59, 0.28));
+}
+
+.marca:hover::after,
+.marca:focus-visible::after {
+  animation: reflexo 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.marca:focus-visible {
+  outline: 1px solid #b8893b;
+  outline-offset: 2px;
+}
+
+.marca:active .logo {
+  transform: scale(0.98);
+}
+
+@keyframes reflexo {
+  0% {
+    opacity: 0;
+    transform: skewX(-20deg) translateX(0);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: skewX(-20deg) translateX(520%);
+  }
+}
+
+@media (max-width: 900px) {
+  .logo {
+    width: 104px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marca,
+  .logo {
+    transition: none;
+  }
+
+  .marca::after {
+    display: none;
+  }
 }

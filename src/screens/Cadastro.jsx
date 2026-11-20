@@ -1,141 +1,307 @@
-import RollIcon from "../components/rollIcon/RollIcon";
-import TextField from "../components/textField/TextField";
-import Header from '../components/Header/Header';
-import Button from '../components/Button/Button';
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
+import Rolo from '../components/Rolo/Rolo';
+import { useTecidos } from '../data/TecidosContext';
+import './Cadastro.css';
 
-const css = `
-.rolo-page {
-    --color-text: #6f6254;
-    --color-accent: #9a6545;
-    --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+const TIPOS = ['image/png', 'image/jpeg', 'image/webp'];
+const TAMANHO_MAX = 8 * 1024 * 1024;
+const LADO_MAX = 600;
 
-    min-height: 100vh;
-    background: #f7f2ec;
-    color: var(--color-text);
-}
-.rolo-content { padding: 1rem clamp(1rem, 6vw, 5rem) 4rem; }
-.rolo-title {
-    margin: 0 0 2rem;
-    font-family: var(--font-serif);
-    font-weight: 400;
-    font-size: clamp(2rem, 4vw, 3rem);
-}
-.rolo-body {
-    display: grid;
-    grid-template-columns: minmax(180px, 1fr) minmax(280px, 1.2fr);
-    align-items: center;
-    gap: clamp(2rem, 8vw, 7rem);
-}
-.rolo-icon-wrap { display: flex; justify-content: center; }
-.rolo-icon { display: block; max-width: 100%; height: auto; }
-.rolo-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.75rem;
-    max-width: 420px;
-}
+const estadoInicial = { nome: '', metros: '', minimo: '', escala: 90 };
 
-.rolo-field { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; }
-.rolo-label {
-    font-family: var(--font-serif);
-    font-size: clamp(1.25rem, 2.2vw, 1.75rem);
-    color: var(--color-text);
-}
-.rolo-input {
-    width: 100%;
-    height: 3.25rem;
-    padding: 0 1rem;
-    border: 2px solid transparent;
-    border-radius: 0.75rem;
-    background: #fff;
-    color: var(--color-text);
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-.rolo-input:focus-visible {
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgb(154 101 69 / 0.2);
-}
-
-@media (max-width: 720px) {
-    .rolo-body { grid-template-columns: 1fr; }
-    .rolo-form { max-width: none; }
-}
-`;
-
-
-
-const CAMPOS = [
-    { name: 'metrosIniciais', label: 'Metros iniciais:' },
-    { name: 'metrosRetirados', label: 'Metros retirados:' },
-    { name: 'estoqueMinimo', label: 'Estoque Mínimo:' },
-];
-
-export default function Cadastro({ setTela, nome = 'Preto', cor = '#111111' }) {
-    const [valores, setValores] = useState({
-        metrosIniciais: '',
-        metrosRetirados: '',
-        estoqueMinimo: '',
+const otimizarImagem = (arquivo) =>
+    new Promise((resolve, reject) => {
+        const leitor = new FileReader();
+        leitor.onerror = () => reject(new Error('Não foi possível ler o arquivo.'));
+        leitor.onload = () => {
+            const img = new Image();
+            img.onerror = () => reject(new Error('Arquivo de imagem inválido.'));
+            img.onload = () => {
+                const fator = Math.min(1, LADO_MAX / Math.max(img.width, img.height));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.round(img.width * fator);
+                canvas.height = Math.round(img.height * fator);
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL('image/jpeg', 0.85));
+            };
+            img.src = leitor.result;
+        };
+        leitor.readAsDataURL(arquivo);
     });
 
-    const handleChange = ({ target }) =>
-        setValores((prev) => ({ ...prev, [target.name]: target.value }));
+export default function Cadastro({ setTela }) {
+    const id = useId();
+    const { adicionar, nomeExiste, proximoId } = useTecidos();
+    const inputArquivo = useRef(null);
+    const [form, setForm] = useState(estadoInicial);
+    const [imagem, setImagem] = useState(null);
+    const [nomeArquivo, setNomeArquivo] = useState('');
+    const [carregando, setCarregando] = useState(false);
+    const [arrastando, setArrastando] = useState(false);
+    const [erroImagem, setErroImagem] = useState('');
+    const [tocado, setTocado] = useState({});
+    const [enviado, setEnviado] = useState(false);
 
-    const [salvando, setSalvando] = useState(false);
+    const nome = form.nome.trim();
+    const metros = form.metros === '' ? null : Number(form.metros);
+    const minimo = form.minimo === '' ? null : Number(form.minimo);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setSalvando(true);
+    const erros = {};
+    if (!nome) erros.nome = 'Informe o nome da estampa.';
+    else if (nome.length > 40) erros.nome = 'Use no máximo 40 caracteres.';
+    else if (nomeExiste(nome)) erros.nome = 'Já existe um rolo com esse nome.';
+    if (!imagem) erros.imagem = erroImagem || 'Envie uma imagem do tecido.';
+    if (metros == null) erros.metros = 'Informe a metragem do rolo.';
+    else if (!(metros > 0)) erros.metros = 'A metragem deve ser maior que zero.';
+    else if (metros > 10000) erros.metros = 'Metragem muito alta.';
+    if (minimo != null && minimo < 0) erros.minimo = 'Informe um valor positivo.';
+    else if (minimo != null && metros != null && minimo > metros) erros.minimo = 'Não pode ser maior que a metragem do rolo.';
+
+    const mostrar = (campo) => (tocado[campo] || enviado) && erros[campo];
+    const valido = Object.keys(erros).length === 0;
+    const minimoSugerido = metros > 0 ? Math.max(1, Math.round(metros * 0.2)) : null;
+
+    const alterar = (campo) => (e) => setForm((atual) => ({ ...atual, [campo]: e.target.value }));
+    const sair = (campo) => () => setTocado((atual) => ({ ...atual, [campo]: true }));
+
+    const processarArquivo = async (arquivo) => {
+        if (!arquivo) return;
+        setTocado((atual) => ({ ...atual, imagem: true }));
+        if (!TIPOS.includes(arquivo.type)) {
+            setErroImagem('Use uma imagem PNG, JPG ou WEBP.');
+            return;
+        }
+        if (arquivo.size > TAMANHO_MAX) {
+            setErroImagem('A imagem deve ter no máximo 8 MB.');
+            return;
+        }
+        setCarregando(true);
+        setErroImagem('');
         try {
-            // TODO: salvar os dados aqui (API, localStorage etc.)
-            console.log('Salvando', valores);
-            await new Promise((r) => setTimeout(r, 800)); // simulação, remova depois
+            const url = await otimizarImagem(arquivo);
+            setImagem(url);
+            setNomeArquivo(arquivo.name);
+        } catch (erro) {
+            setErroImagem(erro.message);
         } finally {
-            setSalvando(false);
+            setCarregando(false);
         }
     };
 
+    const removerImagem = () => {
+        setImagem(null);
+        setNomeArquivo('');
+        if (inputArquivo.current) inputArquivo.current.value = '';
+    };
+
+    const soltar = (e) => {
+        e.preventDefault();
+        setArrastando(false);
+        processarArquivo(e.dataTransfer.files?.[0]);
+    };
+
+    const limpar = () => {
+        setForm(estadoInicial);
+        removerImagem();
+        setErroImagem('');
+        setTocado({});
+        setEnviado(false);
+    };
+
+    const enviar = (e) => {
+        e.preventDefault();
+        setEnviado(true);
+        if (!valido) {
+            const primeiro = ['nome', 'imagem', 'metros', 'minimo'].find((c) => erros[c]);
+            document.getElementById(`${id}-${primeiro}`)?.focus();
+            return;
+        }
+        adicionar({
+            nome,
+            imagem,
+            escala: `${form.escala}px`,
+            metrosIniciais: metros,
+            estoqueMinimo: minimo ?? minimoSugerido,
+        });
+        limpar();
+        setTela('estoque');
+    };
 
     return (
-        <div className="rolo-page">
-            <style>{css}</style>
+        <section className="cad">
+            <header className="cad__topo">
+                <h2 className="cad__titulo">Cadastrar tecido</h2>
+                <p className="cad__subtitulo">Adicione um novo rolo ao estoque</p>
+            </header>
 
-            <Header setTela={setTela} />
-
-            <main className="rolo-content">
-                <h1 className="rolo-title">Rolo: {nome}</h1>
-
-                <section className="rolo-body">
-                    <div className="rolo-icon-wrap">
-                        <RollIcon cor={cor} titulo={`Rolo de tecido ${nome}`} />
+            <form className="cad__grid" onSubmit={enviar} noValidate>
+                <aside className="cad__vitrine" aria-label="Pré-visualização do rolo">
+                    <span className="cad__selo">{proximoId}</span>
+                    <div className={`cad__palco ${imagem ? '' : 'cad__palco--vazio'}`}>
+                        <Rolo imagem={imagem} escala={`${form.escala}px`} grande interativo />
+                    </div>
+                    <div className="cad__previa">
+                        <span className="cad__rotulo">Rolo</span>
+                        <strong>{nome || 'Nome da estampa'}</strong>
+                        <span className="cad__metros">
+                            {metros > 0 ? `${metros.toLocaleString('pt-BR')} m` : '— m'}
+                        </span>
                     </div>
 
-                    <form className="rolo-form" onSubmit={handleSubmit}>
-                        {CAMPOS.map((campo) => (
-                            <TextField
-                                key={campo.name}
-                                name={campo.name}
-                                label={campo.label}
-                                type="number"
-                                inputMode="decimal"
-                                min="0"
-                                step="0.01"
-                                value={valores[campo.name]}
-                                onChange={handleChange}
-                            />
-                        ))}
+                    <label className="cad__escala" htmlFor={`${id}-escala`}>
+                        <span>
+                            Tamanho da estampa
+                            <output htmlFor={`${id}-escala`}>{form.escala}px</output>
+                        </span>
+                        <input
+                            id={`${id}-escala`}
+                            type="range"
+                            min="40"
+                            max="200"
+                            step="5"
+                            value={form.escala}
+                            onChange={alterar('escala')}
+                            disabled={!imagem}
+                            style={{ '--progresso': `${((form.escala - 40) / 160) * 100}%` }}
+                        />
+                    </label>
+                </aside>
 
-                        <Button type="submit" size="lg" fullWidth loading={salvando}>
-                            Salvar
-                        </Button>
-                        <Button variant="secondary" fullWidth onClick={() => setTela('estoque')}>
-                            Voltar
-                        </Button>
-                    </form>
-                </section>
-            </main>
-        </div>
+                <div className="cad__form">
+                    <div className={`cad__campo ${mostrar('nome') ? 'cad__campo--erro' : ''}`}>
+                        <label htmlFor={`${id}-nome`}>Nome da estampa:</label>
+                        <input
+                            id={`${id}-nome`}
+                            type="text"
+                            placeholder="Ex.: Linho Areia"
+                            value={form.nome}
+                            onChange={alterar('nome')}
+                            onBlur={sair('nome')}
+                            maxLength={60}
+                            autoComplete="off"
+                            aria-invalid={Boolean(mostrar('nome'))}
+                            aria-describedby={`${id}-nome-msg`}
+                        />
+                        <p id={`${id}-nome-msg`} className="cad__msg">
+                            {mostrar('nome')}
+                        </p>
+                    </div>
+
+                    <div className={`cad__campo ${mostrar('imagem') ? 'cad__campo--erro' : ''}`}>
+                        <span className="cad__label" id={`${id}-imagem-rotulo`}>Imagem do tecido:</span>
+                        <div
+                            className={`cad__upload ${arrastando ? 'cad__upload--ativo' : ''} ${imagem ? 'cad__upload--preenchido' : ''}`}
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                setArrastando(true);
+                            }}
+                            onDragLeave={() => setArrastando(false)}
+                            onDrop={soltar}
+                        >
+                            <input
+                                ref={inputArquivo}
+                                id={`${id}-imagem`}
+                                className="cad__arquivo"
+                                type="file"
+                                accept={TIPOS.join(',')}
+                                onChange={(e) => processarArquivo(e.target.files?.[0])}
+                                aria-labelledby={`${id}-imagem-rotulo`}
+                                aria-describedby={`${id}-imagem-msg`}
+                                aria-invalid={Boolean(mostrar('imagem'))}
+                            />
+                            {imagem ? (
+                                <div className="cad__arquivo-info">
+                                    <span className="cad__miniatura" style={{ backgroundImage: `url(${imagem})` }} aria-hidden="true" />
+                                    <span className="cad__arquivo-nome">
+                                        <strong>{nomeArquivo}</strong>
+                                        <span>Imagem pronta</span>
+                                    </span>
+                                    <label htmlFor={`${id}-imagem`} className="cad__link">Trocar</label>
+                                    <button type="button" className="cad__link" onClick={removerImagem}>
+                                        Remover
+                                    </button>
+                                </div>
+                            ) : (
+                                <label htmlFor={`${id}-imagem`} className="cad__upload-vazio">
+                                    <span className="cad__upload-icone" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24">
+                                            <path d="M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5" />
+                                            <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+                                        </svg>
+                                    </span>
+                                    <span>
+                                        <strong>{carregando ? 'Processando imagem…' : 'Clique para enviar'}</strong> ou arraste aqui
+                                    </span>
+                                    <small>PNG, JPG ou WEBP · até 8 MB</small>
+                                </label>
+                            )}
+                        </div>
+                        <p id={`${id}-imagem-msg`} className="cad__msg">
+                            {mostrar('imagem') || erroImagem}
+                        </p>
+                    </div>
+
+                    <div className="cad__linha">
+                        <div className={`cad__campo ${mostrar('metros') ? 'cad__campo--erro' : ''}`}>
+                            <label htmlFor={`${id}-metros`}>Metros do rolo:</label>
+                            <div className="cad__entrada">
+                                <input
+                                    id={`${id}-metros`}
+                                    type="number"
+                                    inputMode="decimal"
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="0"
+                                    value={form.metros}
+                                    onChange={alterar('metros')}
+                                    onBlur={sair('metros')}
+                                    aria-invalid={Boolean(mostrar('metros'))}
+                                    aria-describedby={`${id}-metros-msg`}
+                                />
+                                <span>m</span>
+                            </div>
+                            <p id={`${id}-metros-msg`} className="cad__msg">
+                                {mostrar('metros')}
+                            </p>
+                        </div>
+
+                        <div className={`cad__campo ${mostrar('minimo') ? 'cad__campo--erro' : ''}`}>
+                            <label htmlFor={`${id}-minimo`}>Estoque mínimo:</label>
+                            <div className="cad__entrada">
+                                <input
+                                    id={`${id}-minimo`}
+                                    type="number"
+                                    inputMode="decimal"
+                                    min="0"
+                                    step="0.01"
+                                    placeholder={minimoSugerido ? String(minimoSugerido) : 'Opcional'}
+                                    value={form.minimo}
+                                    onChange={alterar('minimo')}
+                                    onBlur={sair('minimo')}
+                                    aria-invalid={Boolean(mostrar('minimo'))}
+                                    aria-describedby={`${id}-minimo-msg`}
+                                />
+                                <span>m</span>
+                            </div>
+                            <p id={`${id}-minimo-msg`} className="cad__msg">
+                                {mostrar('minimo') || (minimoSugerido ? `Se vazio, usamos ${minimoSugerido} m.` : '')}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="cad__acoes">
+                        <button type="button" className="cad__btn cad__btn--secundario" onClick={limpar}>
+                            Limpar
+                        </button>
+                        <button type="submit" className="cad__btn" disabled={carregando}>
+                            Cadastrar rolo
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </section>
     );
 }
