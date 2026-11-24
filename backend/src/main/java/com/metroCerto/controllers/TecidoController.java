@@ -1,7 +1,9 @@
 package com.metroCerto.controllers;
 
+import com.metroCerto.dtos.RegistroResponseDTO;
 import com.metroCerto.dtos.TecidoRequestDTO;
 import com.metroCerto.dtos.TecidoResponseDTO;
+import com.metroCerto.services.RegistroService;
 import com.metroCerto.services.TecidoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,7 @@ import java.util.List;
 public class TecidoController {
 
     private final TecidoService tecidoService;
+    private final RegistroService registroService;
 
     @GetMapping
     public List<TecidoResponseDTO> listar() {
@@ -29,6 +32,12 @@ public class TecidoController {
     @GetMapping("/{id}")
     public TecidoResponseDTO buscarPorId(@PathVariable Long id) {
         return tecidoService.buscarPorId(id);
+    }
+
+    // Retiradas de um rolo específico (mais recentes primeiro)
+    @GetMapping("/{id}/registros")
+    public List<RegistroResponseDTO> listarRegistros(@PathVariable Long id) {
+        return registroService.listarPorTecido(id);
     }
 
     // Devolve a imagem pura: dá para usar direto em <img src="http://localhost:8080/tecidos/1/estampa">

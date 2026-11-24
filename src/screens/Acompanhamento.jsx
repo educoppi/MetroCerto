@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { HOJE, retiradas, situacaoRolo } from "../data/tecidos";
+import { hojeIso, situacaoRolo } from "../data/tecidos";
 import { useTecidos } from "../data/TecidosContext";
 import "./Acompanhamento.css";
 
@@ -21,9 +21,6 @@ const paraDia = (texto) => {
     const [a, m, d] = texto.slice(0, 10).split("-").map(Number);
     return Date.UTC(a, m - 1, d);
 };
-
-const hoje = paraDia(HOJE);
-const primeiroDia = Math.min(...retiradas.map((r) => paraDia(r.data)));
 
 const metros = (valor, casas = 2) =>
     valor.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
@@ -134,7 +131,7 @@ function GraficoEstampas({ linhas, selecionada, onSelecionar }) {
                             aria-label={`${l.nome}: ${metros(l.valor)} metros em ${l.quantidade} retiradas. ${ativa ? "Remover filtro" : "Filtrar por esta estampa"}`}
                         >
                             <span className="acp-barra__nome">
-                                <span className="acp-amostra" style={{ backgroundImage: `url(${l.imagem})` }} aria-hidden="true" />
+                                <span className="acp-amostra" style={{ backgroundImage: `url(${l.estampa})` }} aria-hidden="true" />
                                 {l.nome}
                             </span>
                             <span className="acp-barra__trilho">
@@ -151,19 +148,21 @@ function GraficoEstampas({ linhas, selecionada, onSelecionar }) {
 }
 
 export default function Acompanhamento() {
-    const { tecidos } = useTecidos();
+    const { tecidos, registros: retiradas } = useTecidos();
     const [periodo, setPeriodo] = useState("30");
     const [estampa, setEstampa] = useState("todas");
+    const hoje = paraDia(hojeIso());
 
     const dados = useMemo(() => {
+        const primeiroDia = retiradas.length ? Math.min(...retiradas.map((r) => paraDia(r.dataHora))) : hoje;
         const config = periodos.find((p) => p.id === periodo);
         const inicio = config.dias ? hoje - (config.dias - 1) * DIA : primeiroDia;
         const totalDias = Math.round((hoje - inicio) / DIA) + 1;
         const anteriorInicio = config.dias ? inicio - config.dias * DIA : null;
 
-        const daEstampa = (r) => estampa === "todas" || r.estampa === estampa;
+        const daEstampa = (r) => estampa === "todas" || r.nomeTecido === estampa;
         const noIntervalo = (r, de, ate) => {
-            const d = paraDia(r.data);
+            const d = paraDia(r.dataHora);
             return d >= de && d <= ate;
         };
 
@@ -172,25 +171,25 @@ export default function Acompanhamento() {
             ? retiradas.filter((r) => daEstampa(r) && noIntervalo(r, anteriorInicio, inicio - DIA))
             : null;
 
-        const total = atuais.reduce((s, r) => s + r.metros, 0);
-        const totalAnterior = anteriores ? anteriores.reduce((s, r) => s + r.metros, 0) : null;
+        const total = atuais.reduce((s, r) => s + r.metroMovimentado, 0);
+        const totalAnterior = anteriores ? anteriores.reduce((s, r) => s + r.metroMovimentado, 0) : null;
         const variacao = totalAnterior ? ((total - totalAnterior) / totalAnterior) * 100 : null;
 
         const dias = Array.from({ length: totalDias }, (_, i) => {
             const chave = inicio + i * DIA;
-            const doDia = atuais.filter((r) => paraDia(r.data) === chave);
+            const doDia = atuais.filter((r) => paraDia(r.dataHora) === chave);
             return {
                 chave,
-                valor: doDia.reduce((s, r) => s + r.metros, 0),
+                valor: doDia.reduce((s, r) => s + r.metroMovimentado, 0),
                 quantidade: doDia.length,
-                estampas: [...new Set(doDia.map((r) => r.estampa))],
+                estampas: [...new Set(doDia.map((r) => r.nomeTecido))],
             };
         });
 
         const porEstampa = tecidos
             .map((t) => {
-                const lista = atuais.filter((r) => r.estampa === t.nome);
-                return { ...t, valor: lista.reduce((s, r) => s + r.metros, 0), quantidade: lista.length };
+                const lista = atuais.filter((r) => r.idTecido === t.id);
+                return { ...t, valor: lista.reduce((s, r) => s + r.metroMovimentado, 0), quantidade: lista.length };
             })
             .filter((l) => l.quantidade > 0)
             .sort((a, b) => b.valor - a.valor);
@@ -199,10 +198,10 @@ export default function Acompanhamento() {
         const rolos = tecidos
             .filter((t) => estampa === "todas" || t.nome === estampa)
             .map((t) => {
-                const s = situacaoRolo(t);
+                const s = situacaoRolo(t, retiradas);
                 const consumo30 = retiradas
-                    .filter((r) => r.estampa === t.nome && noIntervalo(r, inicio30, hoje))
-                    .reduce((soma, r) => soma + r.metros, 0) / 30;
+                    .filter((r) => r.idTecido === t.id && noIntervalo(r, inicio30, hoje))
+                    .reduce((soma, r) => soma + r.metroMovimentado, 0) / 30;
                 const diasRestantes = consumo30 > 0 ? Math.floor(s.saldo / consumo30) : null;
                 return { ...s, consumo30, diasRestantes };
             })
@@ -225,7 +224,7 @@ export default function Acompanhamento() {
             iniciaisTotal,
             emAlerta: rolos.filter((r) => r.status !== "ok").length,
         };
-    }, [periodo, estampa, tecidos]);
+    }, [periodo, estampa, tecidos, retiradas, hoje]);
 
     const filtrado = periodo !== "30" || estampa !== "todas";
 
@@ -350,13 +349,13 @@ export default function Acompanhamento() {
                     </header>
                     <ul className="acp-niveis">
                         {dados.rolos.map((r) => {
-                            const pct = (r.saldo / r.metrosIniciais) * 100;
-                            const pctMin = (r.estoqueMinimo / r.metrosIniciais) * 100;
+                            const pct = r.metrosIniciais ? (r.saldo / r.metrosIniciais) * 100 : 0;
+                            const pctMin = r.metrosIniciais ? Math.min((r.estoqueMin / r.metrosIniciais) * 100, 100) : 0;
                             return (
                                 <li key={r.id} className="acp-nivel">
                                     <div className="acp-nivel__topo">
                                         <span className="acp-nivel__nome">
-                                            <span className="acp-amostra" style={{ backgroundImage: `url(${r.imagem})` }} aria-hidden="true" />
+                                            <span className="acp-amostra" style={{ backgroundImage: `url(${r.estampa})` }} aria-hidden="true" />
                                             {r.nome}
                                         </span>
                                         <span className="acp-nivel__saldo">
@@ -373,7 +372,7 @@ export default function Acompanhamento() {
                                         aria-valuenow={r.saldo}
                                     >
                                         <span className="acp-medidor__fill" style={{ width: `${pct}%` }} />
-                                        <span className="acp-medidor__min" style={{ left: `${pctMin}%` }} title={`Mínimo: ${r.estoqueMinimo} m`} />
+                                        <span className="acp-medidor__min" style={{ left: `${pctMin}%` }} title={`Mínimo: ${r.estoqueMin} m`} />
                                     </div>
                                     <StatusSelo status={r.status} />
                                 </li>

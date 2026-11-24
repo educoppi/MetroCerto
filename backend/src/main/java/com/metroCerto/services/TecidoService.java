@@ -20,7 +20,7 @@ public class TecidoService {
 
     @Transactional(readOnly = true)
     public List<TecidoResponseDTO> listar() {
-        return tecidoRepository.findAll().stream().map(TecidoResponseDTO::from).toList();
+        return tecidoRepository.findAllByOrderByIdAsc().stream().map(TecidoResponseDTO::from).toList();
     }
 
     @Transactional(readOnly = true)
@@ -38,6 +38,10 @@ public class TecidoService {
         if (dto.estampa() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A estampa é obrigatória");
         }
+        validar(dto);
+        if (tecidoRepository.existsByNomeIgnoreCase(dto.nome().trim())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe um rolo com esse nome");
+        }
         Tecido tecido = new Tecido();
         preencher(tecido, dto);
         return TecidoResponseDTO.from(tecidoRepository.save(tecido));
@@ -46,6 +50,10 @@ public class TecidoService {
     @Transactional
     public TecidoResponseDTO atualizar(Long id, TecidoRequestDTO dto) {
         Tecido tecido = buscarEntidade(id);
+        validar(dto);
+        if (tecidoRepository.existsByNomeIgnoreCaseAndIdNot(dto.nome().trim(), id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe um rolo com esse nome");
+        }
         preencher(tecido, dto);
         return TecidoResponseDTO.from(tecidoRepository.save(tecido));
     }
@@ -60,8 +68,20 @@ public class TecidoService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tecido não encontrado"));
     }
 
+    private void validar(TecidoRequestDTO dto) {
+        if (dto.nome() == null || dto.nome().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O nome é obrigatório");
+        }
+        if (dto.saldoAtual() == null || dto.saldoAtual().signum() < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "saldoAtual deve ser zero ou maior");
+        }
+        if (dto.estoqueMin() == null || dto.estoqueMin().signum() < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "estoqueMin deve ser zero ou maior");
+        }
+    }
+
     private void preencher(Tecido tecido, TecidoRequestDTO dto) {
-        tecido.setNome(dto.nome());
+        tecido.setNome(dto.nome().trim());
         tecido.setSaldoAtual(dto.saldoAtual());
         tecido.setEstoqueMin(dto.estoqueMin());
         // No PUT, se a estampa não vier no JSON, mantém a imagem atual

@@ -13,7 +13,8 @@ const formatar = (valor) =>
 
 const paraNumero = (valor) => (valor === '' || valor == null ? null : Number(valor));
 
-export default function RoloDetalhe({ tecido, dados, onSalvar, onVoltar }) {
+// remoto = rolo do backend: "Metros retirados" vem dos registros e não é editável
+export default function RoloDetalhe({ tecido, dados, remoto = false, onSalvar, onVoltar }) {
     const id = useId();
     const [form, setForm] = useState({
         iniciais: dados?.iniciais ?? '',
@@ -21,6 +22,8 @@ export default function RoloDetalhe({ tecido, dados, onSalvar, onVoltar }) {
         minimo: dados?.minimo ?? '',
     });
     const [salvo, setSalvo] = useState(false);
+    const [salvando, setSalvando] = useState(false);
+    const [erroEnvio, setErroEnvio] = useState('');
 
     const iniciais = paraNumero(form.iniciais);
     const retirados = paraNumero(form.retirados) ?? 0;
@@ -31,6 +34,8 @@ export default function RoloDetalhe({ tecido, dados, onSalvar, onVoltar }) {
     if (form.retirados !== '' && retirados < 0) erros.retirados = 'Informe um valor positivo.';
     if (iniciais != null && retirados > iniciais) erros.retirados = 'Não pode ser maior que os metros iniciais.';
     if (minimo != null && minimo < 0) erros.minimo = 'Informe um valor positivo.';
+    if (remoto && iniciais == null) erros.iniciais = 'Informe os metros iniciais.';
+    if (remoto && minimo == null) erros.minimo = 'Informe o estoque mínimo.';
 
     const temErro = Object.keys(erros).length > 0;
     const saldo = iniciais != null ? Math.max(iniciais - retirados, 0) : null;
@@ -46,17 +51,25 @@ export default function RoloDetalhe({ tecido, dados, onSalvar, onVoltar }) {
     const alterar = (chave) => (e) => {
         setForm((atual) => ({ ...atual, [chave]: e.target.value }));
         setSalvo(false);
+        setErroEnvio('');
     };
 
-    const enviar = (e) => {
+    const enviar = async (e) => {
         e.preventDefault();
-        if (temErro) return;
-        onSalvar({
-            iniciais: form.iniciais,
-            retirados: form.retirados,
-            minimo: form.minimo,
-        });
-        setSalvo(true);
+        if (temErro || salvando) return;
+        setSalvando(true);
+        try {
+            await onSalvar({
+                iniciais: form.iniciais,
+                retirados: form.retirados,
+                minimo: form.minimo,
+            });
+            setSalvo(true);
+        } catch (erro) {
+            setErroEnvio(erro.status ? erro.message : 'Não foi possível conectar ao servidor.');
+        } finally {
+            setSalvando(false);
+        }
     };
 
     return (
@@ -73,7 +86,7 @@ export default function RoloDetalhe({ tecido, dados, onSalvar, onVoltar }) {
             <div className="detalhe__grid">
                 <div className="detalhe__vitrine">
                     <div className="detalhe__palco">
-                        <Rolo imagem={tecido.imagem} escala={tecido.escala} grande interativo />
+                        <Rolo imagem={tecido.estampa} escala={tecido.escala} grande interativo />
                     </div>
 
                     <dl className="detalhe__resumo">
@@ -124,6 +137,8 @@ export default function RoloDetalhe({ tecido, dados, onSalvar, onVoltar }) {
                                         placeholder="0"
                                         value={form[chave]}
                                         onChange={alterar(chave)}
+                                        disabled={remoto && chave === 'retirados'}
+                                        title={remoto && chave === 'retirados' ? 'Calculado pelas retiradas registradas' : undefined}
                                         aria-invalid={Boolean(erro)}
                                         aria-describedby={`${campoId}-dica`}
                                     />
@@ -140,13 +155,13 @@ export default function RoloDetalhe({ tecido, dados, onSalvar, onVoltar }) {
                         <button type="button" className="detalhe__btn detalhe__btn--secundario" onClick={onVoltar}>
                             Cancelar
                         </button>
-                        <button type="submit" className="detalhe__btn" disabled={temErro}>
-                            Salvar
+                        <button type="submit" className="detalhe__btn" disabled={temErro || salvando}>
+                            {salvando ? 'Salvando…' : 'Salvar'}
                         </button>
                     </div>
 
-                    <p className={`detalhe__aviso ${salvo ? 'detalhe__aviso--visivel' : ''}`} role="status">
-                        {salvo ? 'Alterações salvas com sucesso.' : ''}
+                    <p className={`detalhe__aviso ${salvo || erroEnvio ? 'detalhe__aviso--visivel' : ''}`} role="status">
+                        {erroEnvio || (salvo ? 'Alterações salvas com sucesso.' : '')}
                     </p>
                 </form>
             </div>

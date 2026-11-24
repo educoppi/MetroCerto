@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 // Registro = retirada de tecido. Criar/alterar/excluir um registro ajusta o saldo do tecido.
@@ -27,9 +29,24 @@ public class RegistroService {
     private final UsuarioService usuarioService;
     private final TecidoService tecidoService;
 
+    // Sem datas: todos os registros. Com datas: só os do período (de/ate inclusivos, por dia).
     @Transactional(readOnly = true)
-    public List<RegistroResponseDTO> listar() {
-        return registroRepository.findAll().stream().map(RegistroResponseDTO::from).toList();
+    public List<RegistroResponseDTO> listar(LocalDate de, LocalDate ate) {
+        List<Registro> registros;
+        if (de == null && ate == null) {
+            registros = registroRepository.listarTodos();
+        } else {
+            LocalDateTime inicio = de != null ? de.atStartOfDay() : LocalDateTime.of(1970, 1, 1, 0, 0);
+            LocalDateTime fim = ate != null ? ate.plusDays(1).atStartOfDay() : LocalDateTime.of(9999, 1, 1, 0, 0);
+            registros = registroRepository.listarPorPeriodo(inicio, fim);
+        }
+        return registros.stream().map(RegistroResponseDTO::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RegistroResponseDTO> listarPorTecido(Long idTecido) {
+        tecidoService.buscarEntidade(idTecido);
+        return registroRepository.listarPorTecido(idTecido).stream().map(RegistroResponseDTO::from).toList();
     }
 
     @Transactional(readOnly = true)

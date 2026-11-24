@@ -10,8 +10,8 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                // Front-end React/Vite em desenvolvimento
-                .allowedOrigins("http://localhost:5173", "http://127.0.0.1:5173")
+                // Front-end React/Vite em desenvolvimento (qualquer porta: o Vite troca se a 5173 estiver ocupada)
+                .allowedOriginPatterns("http://localhost:*", "http://127.0.0.1:*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*");
     }

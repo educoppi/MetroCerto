@@ -34,7 +34,7 @@ const otimizarImagem = (arquivo) =>
 
 export default function Cadastro({ setTela }) {
     const id = useId();
-    const { adicionar, nomeExiste, proximoId } = useTecidos();
+    const { adicionar, nomeExiste, backendOk } = useTecidos();
     const inputArquivo = useRef(null);
     const [form, setForm] = useState(estadoInicial);
     const [imagem, setImagem] = useState(null);
@@ -44,6 +44,8 @@ export default function Cadastro({ setTela }) {
     const [erroImagem, setErroImagem] = useState('');
     const [tocado, setTocado] = useState({});
     const [enviado, setEnviado] = useState(false);
+    const [salvando, setSalvando] = useState(false);
+    const [erroEnvio, setErroEnvio] = useState('');
 
     const nome = form.nome.trim();
     const metros = form.metros === '' ? null : Number(form.metros);
@@ -109,25 +111,38 @@ export default function Cadastro({ setTela }) {
         setErroImagem('');
         setTocado({});
         setEnviado(false);
+        setErroEnvio('');
     };
 
-    const enviar = (e) => {
+    const enviar = async (e) => {
         e.preventDefault();
+        if (salvando) return;
         setEnviado(true);
         if (!valido) {
             const primeiro = ['nome', 'imagem', 'metros', 'minimo'].find((c) => erros[c]);
             document.getElementById(`${id}-${primeiro}`)?.focus();
             return;
         }
-        adicionar({
-            nome,
-            imagem,
-            escala: `${form.escala}px`,
-            metrosIniciais: metros,
-            estoqueMinimo: minimo ?? minimoSugerido,
-        });
-        limpar();
-        setTela('estoque');
+        setSalvando(true);
+        setErroEnvio('');
+        try {
+            // Novo rolo vai para o backend
+            await adicionar({
+                nome,
+                estampa: imagem,
+                escala: `${form.escala}px`,
+                saldoAtual: metros,
+                estoqueMin: minimo ?? minimoSugerido,
+            });
+            limpar();
+            setTela('estoque');
+        } catch (erro) {
+            if (erro.status === 409) setErroEnvio('Já existe um rolo com esse nome no servidor.');
+            else if (erro.status) setErroEnvio(erro.message);
+            else setErroEnvio('Não foi possível conectar ao servidor. Verifique se o backend está rodando.');
+        } finally {
+            setSalvando(false);
+        }
     };
 
     return (
@@ -139,7 +154,7 @@ export default function Cadastro({ setTela }) {
 
             <form className="cad__grid" onSubmit={enviar} noValidate>
                 <aside className="cad__vitrine" aria-label="Pré-visualização do rolo">
-                    <span className="cad__selo">{proximoId}</span>
+                    <span className="cad__selo">Novo</span>
                     <div className={`cad__palco ${imagem ? '' : 'cad__palco--vazio'}`}>
                         <Rolo imagem={imagem} escala={`${form.escala}px`} grande interativo />
                     </div>
@@ -296,10 +311,15 @@ export default function Cadastro({ setTela }) {
                         <button type="button" className="cad__btn cad__btn--secundario" onClick={limpar}>
                             Limpar
                         </button>
-                        <button type="submit" className="cad__btn" disabled={carregando}>
-                            Cadastrar rolo
+                        <button type="submit" className="cad__btn" disabled={carregando || salvando}>
+                            {salvando ? 'Salvando…' : 'Cadastrar rolo'}
                         </button>
                     </div>
+                    {(erroEnvio || !backendOk) && (
+                        <p className="cad__msg cad__msg--erro" role="alert">
+                            {erroEnvio || 'Servidor indisponível: o cadastro de rolos só funciona com o backend rodando.'}
+                        </p>
+                    )}
                 </div>
             </form>
         </section>
