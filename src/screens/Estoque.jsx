@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import "./Estoque.css";
 import Rolo from '../components/Rolo/Rolo';
 import RoloDetalhe from './RoloDetalhe';
-import { retiradoPorEstampa } from '../data/tecidos';
+import { doBackend, situacaoRolo } from '../data/tecidos';
 import { useTecidos } from '../data/TecidosContext';
 
 const CHAVE = 'metrocerto:estoque';
@@ -16,7 +16,7 @@ const carregar = () => {
 };
 
 export default function Estoque({ setTela }) {
-    const { tecidos, ultimoId, erroArmazenamento, consumirRolagem } = useTecidos();
+    const { tecidos, registros: retiradas, atualizar, ultimoId, backendOk, consumirRolagem } = useTecidos();
     const [selecionado, setSelecionado] = useState(null);
     const [registros, setRegistros] = useState(carregar);
 
@@ -53,17 +53,29 @@ export default function Estoque({ setTela }) {
     const tecidoAtual = tecidos.find((t) => t.nome === selecionado);
 
     if (tecidoAtual) {
+        const situacao = situacaoRolo(tecidoAtual, retiradas);
+        const remoto = doBackend(tecidoAtual);
+        const calculado = { iniciais: situacao.metrosIniciais, retirados: situacao.retirado, minimo: tecidoAtual.estoqueMin };
+
+        // Rolo do backend: salva saldo e mínimo no servidor (retirados vêm dos registros).
+        // Rolo local: continua salvando os ajustes só no navegador.
+        const salvar = remoto
+            ? (dados) =>
+                  atualizar(tecidoAtual.id, {
+                      nome: tecidoAtual.nome,
+                      saldoAtual: Math.max(Number(dados.iniciais) - situacao.retirado, 0),
+                      estoqueMin: Number(dados.minimo),
+                  })
+            : (dados) => setRegistros((atual) => ({ ...atual, [tecidoAtual.nome]: dados }));
+
         return (
             <section className="estoque-page">
                 <RoloDetalhe
                     key={tecidoAtual.nome}
                     tecido={tecidoAtual}
-                    dados={registros[tecidoAtual.nome] ?? {
-                        iniciais: tecidoAtual.metrosIniciais,
-                        retirados: retiradoPorEstampa(tecidoAtual.nome),
-                        minimo: tecidoAtual.estoqueMinimo,
-                    }}
-                    onSalvar={(dados) => setRegistros((atual) => ({ ...atual, [tecidoAtual.nome]: dados }))}
+                    dados={remoto ? calculado : registros[tecidoAtual.nome] ?? calculado}
+                    remoto={remoto}
+                    onSalvar={salvar}
                     onVoltar={voltar}
                 />
             </section>
@@ -78,9 +90,9 @@ export default function Estoque({ setTela }) {
                     <p className="estoque-contagem">{tecidos.length} rolos cadastrados</p>
                 </header>
 
-                {erroArmazenamento && (
+                {!backendOk && (
                     <p className="estoque-aviso" role="alert">
-                        O rolo foi adicionado, mas não coube no armazenamento do navegador e sumirá ao recarregar a página.
+                        Não foi possível conectar ao servidor. Exibindo apenas os rolos salvos no navegador.
                     </p>
                 )}
 
@@ -94,7 +106,7 @@ export default function Estoque({ setTela }) {
                                 style={{ "--i": i }}
                             >
                                 {tecido.id === ultimoId && <span className="rolo-novo">Novo</span>}
-                                <Rolo imagem={tecido.imagem} escala={tecido.escala} />
+                                <Rolo imagem={tecido.estampa} escala={tecido.escala} />
 
                                 <div className="rolo-rodape">
                                     <p className="rolo-nome">

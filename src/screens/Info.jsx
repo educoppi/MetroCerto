@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { retiradas } from '../data/tecidos';
+import { codigoRolo } from '../data/tecidos';
 import { useTecidos } from '../data/TecidosContext';
 import './Info.css';
 
@@ -17,15 +17,23 @@ const formatoHora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: 
 const formatoMetros = (valor) =>
     valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+const valorColuna = {
+    data: (r) => new Date(r.dataHora),
+    rolo: (r) => codigoRolo(r.idTecido),
+    estampa: (r) => r.nomeTecido,
+    metros: (r) => r.metroMovimentado,
+};
+
 const comparar = (a, b, chave) => {
-    if (chave === 'metros') return a.metros - b.metros;
-    if (chave === 'data') return new Date(a.data) - new Date(b.data);
-    return String(a[chave]).localeCompare(String(b[chave]), 'pt-BR');
+    const va = valorColuna[chave](a);
+    const vb = valorColuna[chave](b);
+    if (chave === 'metros' || chave === 'data') return va - vb;
+    return String(va).localeCompare(String(vb), 'pt-BR');
 };
 
 export default function Info() {
-    const { tecidos } = useTecidos();
-    const tecidoPorNome = useMemo(() => Object.fromEntries(tecidos.map((t) => [t.nome, t])), [tecidos]);
+    const { tecidos, registros: retiradas } = useTecidos();
+    const tecidoPorId = useMemo(() => new Map(tecidos.map((t) => [t.id, t])), [tecidos]);
     const [busca, setBusca] = useState('');
     const [ordem, setOrdem] = useState({ chave: 'data', direcao: 'desc' });
     const [visiveis, setVisiveis] = useState(PASSO);
@@ -33,11 +41,13 @@ export default function Info() {
     const filtradas = useMemo(() => {
         const termo = busca.trim().toLowerCase();
         const lista = termo
-            ? retiradas.filter((r) => r.estampa.toLowerCase().includes(termo) || r.rolo.toLowerCase().includes(termo))
+            ? retiradas.filter(
+                  (r) => r.nomeTecido.toLowerCase().includes(termo) || codigoRolo(r.idTecido).toLowerCase().includes(termo)
+              )
             : retiradas;
         const fator = ordem.direcao === 'asc' ? 1 : -1;
         return [...lista].sort((a, b) => comparar(a, b, ordem.chave) * fator);
-    }, [busca, ordem]);
+    }, [busca, ordem, retiradas]);
 
     const linhas = filtradas.slice(0, visiveis);
     const temMais = visiveis < filtradas.length;
@@ -115,8 +125,8 @@ export default function Info() {
                         </thead>
                         <tbody>
                             {linhas.map((r, i) => {
-                                const tecido = tecidoPorNome[r.estampa];
-                                const data = new Date(r.data);
+                                const tecido = tecidoPorId.get(r.idTecido);
+                                const data = new Date(r.dataHora);
                                 return (
                                     <tr key={r.id} style={{ '--i': i % PASSO }}>
                                         <td>
@@ -124,21 +134,21 @@ export default function Info() {
                                             <span className="info__hora">{formatoHora.format(data)}</span>
                                         </td>
                                         <td>
-                                            <span className="info__id">{r.rolo}</span>
+                                            <span className="info__id">{codigoRolo(r.idTecido)}</span>
                                         </td>
                                         <td>
                                             <span className="info__estampa">
                                                 <span
                                                     className="info__amostra"
-                                                    style={{ backgroundImage: tecido ? `url(${tecido.imagem})` : undefined }}
+                                                    style={{ backgroundImage: tecido ? `url(${tecido.estampa})` : undefined }}
                                                     aria-hidden="true"
                                                 />
-                                                {r.estampa}
+                                                {r.nomeTecido}
                                             </span>
                                         </td>
                                         <td className="info__num">
                                             <span className="info__metros">
-                                                <strong>{formatoMetros(r.metros)}</strong>
+                                                <strong>{formatoMetros(r.metroMovimentado)}</strong>
                                                 <small>m</small>
                                             </span>
                                         </td>

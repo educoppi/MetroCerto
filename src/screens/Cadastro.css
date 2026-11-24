@@ -553,3 +553,8 @@
         transition: none !important;
     }
 }
+
+.cad__msg--erro {
+    margin-top: 12px;
+    color: var(--c-erro);
+}
