@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -39,11 +40,14 @@ public class RegistroController {
         return registroService.criar(dto);
     }
 
-    // Usado pelo hardware: recebe { "tecido": 1.25 } e registra a retirada
-    @PostMapping("/hardware")
-    @ResponseStatus(HttpStatus.CREATED)
-    public RegistroResponseDTO criarPeloHardware(@RequestBody HardwareRequestDTO dto) {
-        return registroService.criarPeloHardware(dto);
+    // Usado pelo hardware (ESP32): GET /registros/hardware?id=1&metro=1.25
+    // id -> id do tecido (opcional, cai no tecido padrão); metro -> metros retirados
+    // Responde 200 OK (padrão de GET), que é o que o firmware espera como sucesso
+    @GetMapping("/hardware")
+    public RegistroResponseDTO criarPeloHardware(
+            @RequestParam(required = false) Long id,
+            @RequestParam BigDecimal metro) {
+        return registroService.criarPeloHardware(new HardwareRequestDTO(id, metro));
     }
 
     @PutMapping("/{id}")

@@ -67,10 +67,12 @@ public class RegistroService {
         return RegistroResponseDTO.from(registroRepository.save(registro));
     }
 
-    // O hardware atual não identifica usuário nem tecido: usa os ids pré-definidos
+    // O hardware não identifica usuário (usa o id pré-definido); o tecido vem no campo "id"
+    // e, se não for enviado, cai no tecido padrão do hardware
     @Transactional
     public RegistroResponseDTO criarPeloHardware(HardwareRequestDTO dto) {
-        return criar(new RegistroRequestDTO(ID_USUARIO_HARDWARE, ID_TECIDO_HARDWARE, dto.tecido()));
+        Long idTecido = dto.id() != null ? dto.id() : ID_TECIDO_HARDWARE;
+        return criar(new RegistroRequestDTO(ID_USUARIO_HARDWARE, idTecido, dto.metro()));
     }
 
     @Transactional

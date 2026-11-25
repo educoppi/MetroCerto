@@ -1,0 +1,45 @@
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+      MYSQL_DATABASE: metrocerto
+      TZ: America/Sao_Paulo
+    ports:
+      # 3307 no seu PC para não brigar com um MySQL instalado localmente
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      # Arquivo de inserts disponível dentro do container (rode à mão, veja README)
+      - ./inserts_metrocerto.txt:/inserts.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p123456"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: ./backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/metrocerto?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: "123456"
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      args:
+        VITE_API_URL: http://localhost:8080
+    ports:
+      # Porta com número para bater com o CORS do backend (http://localhost:*)
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
